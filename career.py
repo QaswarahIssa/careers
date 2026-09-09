@@ -3,10 +3,10 @@ import requests
 
 st.set_page_config(page_title="اختبار تحديد المهنة السيبرانية", layout="centered")
 
-# الرابط الجديد المحدث لـ Google Apps Script
+# الرابط الخاص بك المحدث
 WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzpzv7e9N-tLpeL6aMVGStbUjaogqFqGdKv1Dy7SDCYn6YfEpilLzX-g4UeUe0XevJu/exec"
 
-# ضبط محاذاة الواجهة والخطوط لتصبح من اليمين إلى اليسار (RTL)
+# محاذاة النص والنموذج من اليمين إلى اليسار
 st.markdown("""
     <style>
     body { direction: rtl; text-align: right; }
@@ -16,7 +16,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# الأسئلة المصممة خصيصاً للمهن الست
 questions = [
     {
         "question": "مع التقنيات الجديدة، أفضل...",
@@ -80,7 +79,6 @@ questions = [
     }
 ]
 
-# التفاصيل الشاملة للمهن الست
 role_details = {
     "Security Analyst": "محلل أمني (Security Analyst)\n* بمثابة خط الدفاع الأول؛ يقوم بمراقبة الشبكات وتحليل التنبيهات والتحقيق في الثغرات.",
     "Security Engineer": "مهندس أمني (Security Engineer)\n* يقوم بتصميم وبناء وصيانة الأنظمة الدفاعية والبرمجيات لحماية بنية الشركة التحتية.",
@@ -90,7 +88,6 @@ role_details = {
     "Red Teamer": "عضو الفريق الأحمر (Red Teamer)\n* دور متقدم لمحاكاة هجمات معقدة وطويلة المدى لاختبار مدى كفاءة واستعداد الفرق الدفاعية بالشركة."
 }
 
-# تصنيف الفريق (هجومي أم دفاعي)
 team_category = {
     "Security Analyst": "🛡️ الفريق الدفاعي (Blue Team)",
     "Security Engineer": "🛡️ الفريق الدفاعي (Blue Team)",
@@ -127,7 +124,7 @@ if submit_button:
         suggested_job = role_details[top_role]
         team_type = team_category[top_role]
 
-        # تجهيز البيانات للإرسال نحو Google Apps Script
+        # تحضير البيانات بصيغة JSON مفصلة للـ Apps Script
         payload = {
             "full_name": full_name.strip(),
             "job_result": f"{team_type} - {top_role}",

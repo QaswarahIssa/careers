@@ -3,20 +3,20 @@ import requests
 
 st.set_page_config(page_title="اختبار تحديد المهنة السيبرانية", layout="centered")
 
-# رابط Google Apps Script الخاص بك
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyPaFxrAVilhOTR-61EcFICNj29jAcWUlAjmgLNEa7NnbuYLtqVYJ7pr16mbpy6UP9E/exec"
+# الرابط الجديد المحدث لـ Google Apps Script
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzpzv7e9N-tLpeL6aMVGStbUjaogqFqGdKv1Dy7SDCYn6YfEpilLzX-g4UeUe0XevJu/exec"
 
-# ضبط الاتجاه من اليمين إلى اليسار (RTL)
+# ضبط محاذاة الواجهة والخطوط لتصبح من اليمين إلى اليسار (RTL)
 st.markdown("""
     <style>
     body { direction: rtl; text-align: right; }
     .stRadio > div { text-align: right; direction: rtl; }
     div[data-testid="stMarkdownContainer"] { text-align: right; }
-    div.stButton > button { width: 100%; font-size: 18px; font-weight: bold; }
+    div.stButton > button { width: 100%; font-size: 18px; font-weight: bold; background-color: #1E824C; color: white; }
     </style>
 """, unsafe_allow_html=True)
 
-# الأسئلة الموجهة خصيصاً للمهن الست
+# الأسئلة المصممة خصيصاً للمهن الست
 questions = [
     {
         "question": "مع التقنيات الجديدة، أفضل...",
@@ -80,7 +80,7 @@ questions = [
     }
 ]
 
-# القاموس المخصص للمهن الست
+# التفاصيل الشاملة للمهن الست
 role_details = {
     "Security Analyst": "محلل أمني (Security Analyst)\n* بمثابة خط الدفاع الأول؛ يقوم بمراقبة الشبكات وتحليل التنبيهات والتحقيق في الثغرات.",
     "Security Engineer": "مهندس أمني (Security Engineer)\n* يقوم بتصميم وبناء وصيانة الأنظمة الدفاعية والبرمجيات لحماية بنية الشركة التحتية.",
@@ -90,7 +90,7 @@ role_details = {
     "Red Teamer": "عضو الفريق الأحمر (Red Teamer)\n* دور متقدم لمحاكاة هجمات معقدة وطويلة المدى لاختبار مدى كفاءة واستعداد الفرق الدفاعية بالشركة."
 }
 
-# تحديد الفريق التابع له كل تخصص
+# تصنيف الفريق (هجومي أم دفاعي)
 team_category = {
     "Security Analyst": "🛡️ الفريق الدفاعي (Blue Team)",
     "Security Engineer": "🛡️ الفريق الدفاعي (Blue Team)",
@@ -101,9 +101,11 @@ team_category = {
 }
 
 st.title("🛡️ اختبار تحديد المهنة السيبرانية المناسبة")
-st.write("أجب عن الأسئلة التالية لاكتشاف التخصص والأدوار الأكثر ملاءمة لشخصيتك:")
 
 with st.form("quiz_form"):
+    full_name = st.text_input("الاسم الثلاثي:", placeholder="أدخل اسمك الثلاثي هنا لتسجيل النتيجة")
+    st.write("---")
+
     user_answers = []
     for idx, q in enumerate(questions):
         st.subheader(f"السؤال {idx + 1}: {q['question']}")
@@ -114,27 +116,30 @@ with st.form("quiz_form"):
     submit_button = st.form_submit_button("عرض المهنة المقترحة وحفظ النتيجة")
 
 if submit_button:
-    # حساب أعلى مهنة تكررت بناءً على الخيارات
-    scores = {}
-    for role in user_answers:
-        scores[role] = scores.get(role, 0) + 1
-    
-    top_role = max(scores, key=scores.get)
-    suggested_job = role_details[top_role]
-    team_type = team_category[top_role]
+    if not full_name.strip():
+        st.error("⚠️ يرجى كتابة الاسم الثلاثي أولاً لتسجيل النتيجة باسمك.")
+    else:
+        scores = {}
+        for role in user_answers:
+            scores[role] = scores.get(role, 0) + 1
+        
+        top_role = max(scores, key=scores.get)
+        suggested_job = role_details[top_role]
+        team_type = team_category[top_role]
 
-    # إرسال البيانات إلى Google Sheets
-    payload = {
-        "job_result": f"{team_type} - {top_role}",
-        "answers": f"النقاط المفصلة: {scores}"
-    }
-    
-    try:
-        response = requests.post(WEB_APP_URL, json=payload, timeout=5)
-        st.balloons()
-        st.success("تم حفظ نتيجتك أوتوماتيكياً في جدول بيانات جوجل!")
-    except Exception as e:
-        st.warning("تم إظهار النتيجة، وتأذر الحفظ الأوتوماتيكي في الشيت حالياً.")
+        # تجهيز البيانات للإرسال نحو Google Apps Script
+        payload = {
+            "full_name": full_name.strip(),
+            "job_result": f"{team_type} - {top_role}",
+            "answers": f"النقاط التفصيلية: {scores}"
+        }
+        
+        try:
+            response = requests.post(WEB_APP_URL, json=payload, timeout=5)
+            st.balloons()
+            st.success(f"تم حفظ نتيجتك بنجاح باسم ({full_name}) في شيت جوجل!")
+        except Exception:
+            st.warning("تم عرض النتيجة، وتأذر الحفظ التلقائي في الشيت حالياً.")
 
-    st.markdown(f"### {team_type}")
-    st.markdown(f"### ✨ المهنة الأكثر ملاءمة لشخصيتك هي:\n**{suggested_job}**")
+        st.markdown(f"### {team_type}")
+        st.markdown(f"### ✨ المهنة الأكثر ملاءمة لك يا **{full_name}** هي:\n**{suggested_job}**")
